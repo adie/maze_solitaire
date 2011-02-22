@@ -19,6 +19,7 @@ $(document).onReady(function() {
   field.each(function(card, i) {
     createElem(i);
   });
+  recalcAll();
 });
 
 function createElem(i) {
@@ -43,9 +44,13 @@ function createElem(i) {
       num = num < 0 ? numbers.last() : numbers[num];
       accepted = accepted.merge(field[i+1][0] + num);
     }
+    accepted.each(function(elem, j) {
+      if ($(elem)) {
+        $(elem).addClass('drop_'+i);
+      }
+    });
 
-    elem.makeDroppable({containment: accepted});
-    elem.text(accepted);
+    elem.makeDroppable({accept: '.drop_'+i});
   } else {
     elem = $E('div', {id: card, 'data-id': i, 'class': 'card', style: Object.merge(pos, {
       'background-image': 'url("cards_png/'+card+'.png")'})
@@ -62,6 +67,7 @@ function createElem(i) {
         draggable.revert = function(){};
         draggable.destroy().element.remove();
         droppable.destroy().element.remove();
+        "div.card".removeClass('drop_'+empty_id);
         createElem(card_id);
         createElem(empty_id);
         recalcAll();
