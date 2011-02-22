@@ -1,0 +1,21 @@
+#field {
+  position: relative;
+}
+
+#field .card {
+  position: absolute;
+  height: 96px;
+  width: 71px;
+  cursor: pointer;
+}
+
+#field .empty {
+  position: absolute;
+  height: 94px;
+  width: 69px;
+  border: 1px dashed black;
+}
+
+#field .droppable-allow {
+  background-color: #6f6;
+}
