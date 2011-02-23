@@ -44,9 +44,9 @@ function createElem(i) {
       num = num < 0 ? numbers.last() : numbers[num];
       accepted = accepted.merge(field[i+1][0] + num);
     }
-    accepted.each(function(elem, j) {
-      if ($(elem)) {
-        $(elem).addClass('drop_'+i);
+    accepted.each(function(accept_card, j) {
+      if ($(accept_card)) {
+        $(accept_card).addClass('drop_'+i);
       }
     });
 
@@ -65,8 +65,9 @@ function createElem(i) {
         field[card_id] = field[empty_id];
         field[empty_id] = tmp;
         draggable.revert = function(){};
-        draggable.destroy().element.remove();
-        droppable.destroy().element.remove();
+        draggable.clone.remove();
+        draggable.element.remove();
+        droppable.element.remove();
         "div.card".removeClass('drop_'+empty_id);
         createElem(card_id);
         createElem(empty_id);
@@ -86,3 +87,4 @@ function recalcAll() {
     }
   });
 }
+
