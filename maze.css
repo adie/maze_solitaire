@@ -1,5 +1,10 @@
+#wrapper {
+}
+
 #field {
   position: relative;
+  height: 588px;
+  /*width: 657px;*/
 }
 
 #field .card {
@@ -18,4 +23,17 @@
 
 #field .droppable-allow {
   background-color: #6f6;
+}
+
+#footer {
+  margin-top: 4px;
+}
+
+p {
+  margin: 0;
+  margin-top: 0.2em;
+}
+
+a {
+  color: steelblue;
 }
