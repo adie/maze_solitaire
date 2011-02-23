@@ -39,7 +39,7 @@ function createElem(i) {
       num = num > numbers.size()-1 ? numbers.first() : numbers[num];
       accepted = accepted.merge(field[i-1][0] + num);
     }
-    if (i < field.size() && !field[i+1].blank()) {
+    if ((i+1 < field.size()) && !field[i+1].blank()) {
       var num = numbers.indexOf(field[i+1].slice(1)) - 1;
       num = num < 0 ? numbers.last() : numbers[num];
       accepted = accepted.merge(field[i+1][0] + num);
