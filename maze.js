@@ -26,6 +26,10 @@ var MazeGame = new Class({
     }
     this.recalcAll();
   },
+  refresh: function() {
+    $(this.div_id).clean();
+    this.start();
+  },
   recalcAll: function() {
     for (var i = 0; i < this.field.size(); i++) {
       if (this.field[i].blank()) {
@@ -45,7 +49,7 @@ var MazeGame = new Class({
       elem = $E('div', {id: 'blank_'+i, 'data-id': i, 'class': 'empty', style: pos});
       var accepted = [];
       if (i == 0) {
-        accepted = accepted.merge(MazeGame.SUITS.map(function(suit, i) { return suit+'2' }));
+        accepted = accepted.merge(MazeGame.SUITS.map(function(suit, i) { return suit + MazeGame.NUMBERS[0] }));
       } else if (!this.field[i-1].blank()) {
         var num = MazeGame.NUMBERS.indexOf(this.field[i-1].slice(1)) + 1;
         num = num > MazeGame.NUMBERS.size()-1 ? MazeGame.NUMBERS.first() : MazeGame.NUMBERS[num];
@@ -73,7 +77,6 @@ var MazeGame = new Class({
         onDrop: function(droppable, draggable, event) {
           var card_id = draggable.element.get('data-id');
           var empty_id = droppable.element.get('data-id');
-          //FIXME
           var tmp = this.field[card_id];
           this.field[card_id] = this.field[empty_id];
           this.field[empty_id] = tmp;
@@ -84,7 +87,6 @@ var MazeGame = new Class({
           draggable.element.remove();
           droppable.element.remove();
           "div.card".removeClass('drop_'+empty_id);
-          //FIXME
           this.createElem(card_id);
           this.createElem(empty_id);
           this.recalcAll();

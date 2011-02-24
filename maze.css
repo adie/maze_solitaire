@@ -5,24 +5,24 @@
   position: relative;
   height: 588px;
   width: 657px;
+  background: url('cards_png/blank.png') repeat;
 }
 
-#field .card {
+#field .card, #field .empty {
   position: absolute;
   height: 96px;
   width: 71px;
-  cursor: pointer;
 }
 
-#field .empty {
-  position: absolute;
-  height: 94px;
-  width: 69px;
-  border: 1px dashed black;
+#field .card {
+  cursor: pointer;
 }
 
 #field .droppable-allow {
   background-color: #6f6;
+  height: 94px;
+  width: 69px;
+  margin: 1px;
 }
 
 #footer {
