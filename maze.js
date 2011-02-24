@@ -1,4 +1,4 @@
-var numbers = ['1','2','3','4','5','6','7','8','9','10','j','q'];
+var numbers = ['1','2','3','4','5','6','7','8','9','10','j','q', 'k'];
 var suits = ['h', 'd', 'c', 's'];
 var cards = [];
 var field;
@@ -9,11 +9,12 @@ $(document).onReady(function() {
       cards = cards.merge(suits[i] + numbers[j]);
     }
   }
-  field = cards;
-  (suits.size()*numbers.size()).upto(9*6-1, function(i) {
-    field[i] = '';
+  field = cards.shuffle();
+  field.splice(8, 0, MazeGame.EMPTY_PLACE_STRING);
+  field.splice(17, 0, MazeGame.EMPTY_PLACE_STRING);
+  field = field.walk(function(name, i) {
+    return name.endsWith('k') ? MazeGame.EMPTY_PLACE_STRING : name;
   });
-  field = field.shuffle();
 
   // generating for the first time
   field.each(function(card, i) {
@@ -64,8 +65,10 @@ function createElem(i) {
         var tmp = field[card_id];
         field[card_id] = field[empty_id];
         field[empty_id] = tmp;
-        draggable.revert = function(){};
-        draggable.clone.remove();
+
+        this.clone.remove();
+        this.options.revert = false;
+
         draggable.element.remove();
         droppable.element.remove();
         "div.card".removeClass('drop_'+empty_id);
@@ -88,3 +91,8 @@ function recalcAll() {
   });
 }
 
+var MazeGame = new Class({
+    extend: {
+      EMPTY_PLACE_STRING: ''
+    }
+});
