@@ -1,24 +1,21 @@
 var MazeGame = new Class({
   extend: {
     EMPTY_PLACE_STRING: '',
-    NUMBERS: ['1','2','3','4','5','6','7','8','9','10','j','q'],
+    NUMBERS: ['1','2','3','4','5','6','7','8','9','10','j','q','k'],
     SUITS: ['h', 'd', 'c', 's']
   },
   div_id: 'field',
   field: [],
-  initialize: function() {
-    var cards = [];
-    MazeGame.SUITS.each(function(suit, i) {
-      MazeGame.NUMBERS.merge(['k']).each(function(number, j) {
-        cards = cards.merge(suit + number);
-      });
-    });
-    this.field = cards.shuffle();
-    this.field.splice(8, 0, MazeGame.EMPTY_PLACE_STRING);
-    this.field.splice(17, 0, MazeGame.EMPTY_PLACE_STRING);
-    this.field = this.field.walk(function(name, i) {
-      return name.endsWith('k') ? MazeGame.EMPTY_PLACE_STRING : name;
-    });
+  initialize: function(rules) {
+    $ext(this, rules);
+    this.field = [];
+    for (var i = 0; i < MazeGame.SUITS.size(); i++) {
+      for (var j = 0; j < MazeGame.NUMBERS.size(); j++) {
+        this.field = this.field.merge(MazeGame.SUITS[i] + MazeGame.NUMBERS[j]);
+      }
+    }
+    this.field = this.field.shuffle();
+    this.prepareField();
   },
   start: function() {
     for (var i = 0; i < this.field.size(); i++) {
@@ -39,6 +36,7 @@ var MazeGame = new Class({
     }
   },
   createElem: function(i) {
+    i = parseInt(i);
     var card = this.field[i];
     var y = (i/9).floor();
     var x = i-(y*9);
@@ -47,19 +45,7 @@ var MazeGame = new Class({
 
     if (card.blank()) {
       elem = $E('div', {id: 'blank_'+i, 'data-id': i, 'class': 'empty', style: pos});
-      var accepted = [];
-      if (i == 0) {
-        accepted = accepted.merge(MazeGame.SUITS.map(function(suit, i) { return suit + MazeGame.NUMBERS[0] }));
-      } else if (!this.field[i-1].blank()) {
-        var num = MazeGame.NUMBERS.indexOf(this.field[i-1].slice(1)) + 1;
-        num = num > MazeGame.NUMBERS.size()-1 ? MazeGame.NUMBERS.first() : MazeGame.NUMBERS[num];
-        accepted = accepted.merge(this.field[i-1][0] + num);
-      }
-      if ((i+1 < this.field.size()) && !this.field[i+1].blank()) {
-        var num = MazeGame.NUMBERS.indexOf(this.field[i+1].slice(1)) - 1;
-        num = num < 0 ? MazeGame.NUMBERS.last() : MazeGame.NUMBERS[num];
-        accepted = accepted.merge(this.field[i+1][0] + num);
-      }
+      var accepted = this.acceptedBy(i);
       accepted.each(function(accept_card, j) {
         if ($(accept_card)) {
           $(accept_card).addClass('drop_'+i);
@@ -95,10 +81,53 @@ var MazeGame = new Class({
     }
 
     $(this.div_id).append(elem);
+  },
+  // Rules-specific functions
+  prepareField: function() {},
+  acceptedBy: function(i) { return [] }
+});
+
+var WikipediaRules = new Class({
+  prepareField: function() {
+    this.field.splice(8, 0, MazeGame.EMPTY_PLACE_STRING);
+    this.field.splice(17, 0, MazeGame.EMPTY_PLACE_STRING);
+    this.field = this.field.walk(function(name, i) {
+      return name.endsWith('k') ? MazeGame.EMPTY_PLACE_STRING : name;
+    });
+  },
+  acceptedBy: function(i) {
+    var accepted = [];
+    if ((i == 0 && !this.field.last().blank()) || (i > 0 && !this.field[i-1].blank())) {
+      var cell;
+      if (i == 0) {
+        cell = this.field.last();
+      } else {
+        cell = this.field[i-1];
+      }
+      var num = MazeGame.NUMBERS.indexOf(cell.slice(1)) + 1;
+      if (num == 12) {
+        accepted = accepted.merge(MazeGame.SUITS.map(function(suit, i) { return suit + '1' }));
+      } else {
+        accepted = accepted.merge(cell[0] + MazeGame.NUMBERS[num]);
+      }
+    }
+    if ((i+1 < this.field.size() && !this.field[i+1].blank()) || (i+1 == this.field.size() && !this.field.last().blank())) {
+      var cell;
+      if (i+1 == this.field.size()) {
+        cell = this.field.first();
+      } else {
+        cell = this.field[i+1];
+      }
+      var num = MazeGame.NUMBERS.indexOf(cell.slice(1)) - 1;
+      if (num >=0) {
+        accepted = accepted.merge(cell[0] + MazeGame.NUMBERS[num]);
+      }
+    }
+    return accepted;
   }
 });
 
-var game = new MazeGame();
+var game = new MazeGame(new WikipediaRules());
 $(document).onReady(function() {
   game.start();
 });
