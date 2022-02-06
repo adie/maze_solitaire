@@ -116,7 +116,7 @@ class WikipediaRules {
 
     const prev = i === 0 ? field.slice(-1) : field[i - 1]
     if (prev !== EMPTY_PLACE_STRING) {
-      const num = NUMBERS.indexOf(prev[1]) + 1
+      const num = NUMBERS.indexOf(prev.slice(1)) + 1
       if (num == 12) {
         // We're on queen, any Ace can be put.
         accepted = accepted.concat(SUITS.map(function(suit, i) { return suit + '1' }))
@@ -124,10 +124,10 @@ class WikipediaRules {
         accepted = accepted.concat(prev[0] + NUMBERS[num])
       }
     }
-    // Check to the right
+
     const next = i + 1 === field.length ? field[0] : field[i + 1]
     if (next !== EMPTY_PLACE_STRING) {
-      const num = NUMBERS.indexOf(next[1]) - 1
+      const num = NUMBERS.indexOf(next.slice(1)) - 1
       if (num >= 0) {
         accepted = accepted.concat(next[0] + NUMBERS[num])
       }
