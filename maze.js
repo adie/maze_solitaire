@@ -1,133 +1,140 @@
-var MazeGame = new Class({
-  extend: {
-    EMPTY_PLACE_STRING: '',
-    NUMBERS: ['1','2','3','4','5','6','7','8','9','10','j','q','k'],
-    SUITS: ['h', 'd', 'c', 's']
-  },
-  div_id: 'field',
-  field: [],
-  initialize: function(rules) {
-    $ext(this, rules);
-    this.field = [];
-    for (var i = 0; i < MazeGame.SUITS.size(); i++) {
-      for (var j = 0; j < MazeGame.NUMBERS.size(); j++) {
-        this.field = this.field.merge(MazeGame.SUITS[i] + MazeGame.NUMBERS[j]);
+const EMPTY_PLACE_STRING = ''
+const NUMBERS = ['1','2','3','4','5','6','7','8','9','10','j','q','k']
+const SUITS = ['h', 'd', 'c', 's']
+const div_id = 'field'
+
+class MazeGame {
+  constructor(rules) {
+    this.rules = rules
+    this.field = []
+    for (let i = 0; i < SUITS.length; i++) {
+      for (let j = 0; j < NUMBERS.length; j++) {
+        this.field = this.field.concat(SUITS[i] + NUMBERS[j])
       }
     }
-    this.field = this.field.shuffle();
-    this.prepareField();
-  },
-  start: function() {
-    for (var i = 0; i < this.field.size(); i++) {
-      this.createElem(i);
-    }
-    this.recalcAll();
-  },
-  refresh: function() {
-    $(this.div_id).clean();
-    this.start();
-  },
-  recalcAll: function() {
-    for (var i = 0; i < this.field.size(); i++) {
-      if (this.field[i].blank()) {
-        $('blank_'+i).remove();
-        this.createElem(i);
-      }
-    }
-  },
-  createElem: function(i) {
-    i = parseInt(i);
-    var card = this.field[i];
-    var y = (i/9).floor();
-    var x = i-(y*9);
-    var pos = {top: (y*98)+'px', left: (x*73)+'px'};
-    var elem;
-
-    if (card.blank()) {
-      elem = $E('div', {id: 'blank_'+i, 'data-id': i, 'class': 'empty', style: pos});
-      var accepted = this.acceptedBy(i);
-      accepted.each(function(accept_card, j) {
-        if ($(accept_card)) {
-          $(accept_card).addClass('drop_'+i);
-        }
-      });
-
-      elem.makeDroppable({accept: '.drop_'+i});
-    } else {
-      elem = $E('div', {id: card, 'data-id': i, 'class': 'card', style: Object.merge(pos, {
-        'background-image': 'url("cards_png/'+card+'.png")'})
-      });
-      elem.makeDraggable({
-        revert: true,
-        revertDuration: 'short',
-        onDrop: function(droppable, draggable, event) {
-          var card_id = draggable.element.get('data-id');
-          var empty_id = droppable.element.get('data-id');
-          var tmp = this.field[card_id];
-          this.field[card_id] = this.field[empty_id];
-          this.field[empty_id] = tmp;
-
-          draggable.clone.remove();
-          draggable.options.revert = false;
-
-          draggable.element.remove();
-          droppable.element.remove();
-          "div.card".removeClass('drop_'+empty_id);
-          this.createElem(card_id);
-          this.createElem(empty_id);
-          this.recalcAll();
-        }.bind(this)
-      });
-    }
-
-    $(this.div_id).append(elem);
-  },
-  // Rules-specific functions
-  prepareField: function() {},
-  acceptedBy: function(i) { return [] }
-});
-
-var WikipediaRules = new Class({
-  prepareField: function() {
-    this.field.splice(8, 0, MazeGame.EMPTY_PLACE_STRING);
-    this.field.splice(17, 0, MazeGame.EMPTY_PLACE_STRING);
-    this.field = this.field.walk(function(name, i) {
-      return name.endsWith('k') ? MazeGame.EMPTY_PLACE_STRING : name;
-    });
-  },
-  acceptedBy: function(i) {
-    var accepted = [];
-    if ((i == 0 && !this.field.last().blank()) || (i > 0 && !this.field[i-1].blank())) {
-      var cell;
-      if (i == 0) {
-        cell = this.field.last();
-      } else {
-        cell = this.field[i-1];
-      }
-      var num = MazeGame.NUMBERS.indexOf(cell.slice(1)) + 1;
-      if (num == 12) {
-        accepted = accepted.merge(MazeGame.SUITS.map(function(suit, i) { return suit + '1' }));
-      } else {
-        accepted = accepted.merge(cell[0] + MazeGame.NUMBERS[num]);
-      }
-    }
-    if ((i+1 < this.field.size() && !this.field[i+1].blank()) || (i+1 == this.field.size() && !this.field.last().blank())) {
-      var cell;
-      if (i+1 == this.field.size()) {
-        cell = this.field.first();
-      } else {
-        cell = this.field[i+1];
-      }
-      var num = MazeGame.NUMBERS.indexOf(cell.slice(1)) - 1;
-      if (num >=0) {
-        accepted = accepted.merge(cell[0] + MazeGame.NUMBERS[num]);
-      }
-    }
-    return accepted;
+    this.field.sort(() => Math.random() - 0.5)
+    this.field = rules.prepareField(this.field)
   }
-});
+  start() {
+    for (let i = 0; i < this.field.length; i++) {
+      this.createElem(i)
+    }
+    this.rebuildBlanks()
+  }
+  refresh() {
+    const div = document.getElementById(div_id)
+    while (div.firstChild) { div.removeChild(div.lastChild) }
+    this.start()
+  }
+  rebuildBlanks() {
+    for (let i = 0; i < this.field.length; i++) {
+      if (!this.field[i]) {
+        if (document.getElementById('blank_'+i)) {
+          document.getElementById('blank_'+i).remove()
+        }
+        this.createElem(i)
+      }
+    }
+  }
+  createElem(i) {
+    i = parseInt(i)
+    const card = this.field[i]
+    const y = Math.floor(i/9)
+    const x = i-(y*9)
+    const pos = {top: (y*98)+'px', left: (x*73)+'px'}
 
-var game = new MazeGame(new WikipediaRules());
-$(document).onReady(function() {
-  game.start();
-});
+    const elem = document.createElement('div')
+    elem.style.top = pos.top
+    elem.style.left = pos.left
+
+    if (card == '') {
+      elem.setAttribute('id', 'blank_'+i)
+      elem.setAttribute('data-idx', i)
+      elem.classList.add('empty')
+
+      const accepted = this.rules.acceptedBy(this.field, i)
+
+      elem.addEventListener('drop', (ev) => {
+        ev.preventDefault()
+        const card_id = ev.dataTransfer.getData('text/plain')
+
+        const idx1 = this.field.indexOf(card_id)
+        const idx2 = parseInt(ev.target.dataset.idx)
+
+        let tmp = this.field[idx1]
+        this.field[idx1] = this.field[idx2]
+        this.field[idx2] = tmp
+
+        this.refresh()
+      })
+      elem.addEventListener('dragenter', (ev) => {
+        if (accepted.includes(this.dragging)) {
+          ev.preventDefault()
+          ev.currentTarget.style.background = 'lightblue'
+        }
+      })
+      elem.addEventListener('dragover', (ev) => {
+        if (accepted.includes(this.dragging)) {
+          ev.preventDefault()
+        }
+      })
+      elem.addEventListener('dragleave', (ev) => {
+        ev.currentTarget.style.background = ''
+      })
+    } else {
+      elem.setAttribute('id', card)
+      elem.setAttribute('data-id', i)
+      elem.classList.add('card')
+      elem.style.backgroundImage = `url("cards_png/${card}.png")`
+
+      elem.setAttribute('draggable', true)
+      elem.addEventListener('dragstart', (ev) => {
+        this.dragging = card
+        ev.dataTransfer.setData('text/plain', ev.target.id)
+      })
+      elem.addEventListener('dragend', (ev) => {
+        this.dragging = null
+        ev.dataTransfer.clearData()
+      })
+    }
+
+    document.getElementById(div_id).append(elem)
+  }
+}
+
+class WikipediaRules {
+  prepareField(field) {
+    field.splice(8, 0, EMPTY_PLACE_STRING)
+    field.splice(17, 0, EMPTY_PLACE_STRING)
+    field = field.map((name, i) => {
+      return name.endsWith('k') ? EMPTY_PLACE_STRING : name
+    })
+    return field
+  }
+  acceptedBy(field, i) {
+    let accepted = []
+
+    const prev = i === 0 ? field.slice(-1) : field[i - 1]
+    if (prev !== EMPTY_PLACE_STRING) {
+      const num = NUMBERS.indexOf(prev[1]) + 1
+      if (num == 12) {
+        // We're on queen, any Ace can be put.
+        accepted = accepted.concat(SUITS.map(function(suit, i) { return suit + '1' }))
+      } else {
+        accepted = accepted.concat(prev[0] + NUMBERS[num])
+      }
+    }
+    // Check to the right
+    const next = i + 1 === field.length ? field[0] : field[i + 1]
+    if (next !== EMPTY_PLACE_STRING) {
+      const num = NUMBERS.indexOf(next[1]) - 1
+      if (num >= 0) {
+        accepted = accepted.concat(next[0] + NUMBERS[num])
+      }
+    }
+    return accepted
+  }
+}
+
+const game = new MazeGame(new WikipediaRules())
+game.start()
