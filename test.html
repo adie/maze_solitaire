@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Test Suite</title>
+<link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.17.2.css">
+
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="https://code.jquery.com/qunit/qunit-2.17.2.js"></script>
+  <script src="./maze.js"></script>
+  <script>
+    QUnit.module('Rules', () => {
+      const rules = new WikipediaRules()
+      QUnit.module('accpetedBy', () => {
+        QUnit.test('to the left of the 10 is 9', (assert) => {
+          const field = ['', 'c10', '']
+          assert.deepEqual(rules.acceptedBy(field, 0), ['c9'])
+        })
+
+        QUnit.test('to the right of the 10 is jack', (assert) => {
+          const field = ['c10', '', '']
+          assert.deepEqual(rules.acceptedBy(field, 1), ['cj'])
+        })
+        
+        QUnit.test('loop across the field backwards', (assert) => {
+          const field = ['c10', '', '']
+          assert.deepEqual(rules.acceptedBy(field, 2), ['c9'])
+        })
+        
+        QUnit.test('loop across the field forward', (assert) => {
+          const field = ['', '', 'c10']
+          assert.deepEqual(rules.acceptedBy(field, 0), ['cj'])
+        })
+        
+        QUnit.test('to the right of queen any ace', (assert) => {
+          const field = ['', 'hq', '']
+          assert.deepEqual(rules.acceptedBy(field, 2), ['h1', 'd1', 'c1', 's1'])
+        })
+        
+        QUnit.test('to the left of ace is nothing', (assert) => {
+          const field = ['', 'h1', '']
+          assert.deepEqual(rules.acceptedBy(field, 0), [])
+        })
+      })
+    })
+  </script>
+</body>

@@ -114,7 +114,7 @@ class WikipediaRules {
   acceptedBy(field, i) {
     let accepted = []
 
-    const prev = i === 0 ? field.slice(-1) : field[i - 1]
+    const prev = i === 0 ? field[field.length - 1] : field[i - 1]
     if (prev !== EMPTY_PLACE_STRING) {
       const num = NUMBERS.indexOf(prev.slice(1)) + 1
       if (num == 12) {
@@ -135,6 +135,3 @@ class WikipediaRules {
     return accepted
   }
 }
-
-const game = new MazeGame(new WikipediaRules())
-game.start()
